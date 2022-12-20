@@ -1,142 +1,94 @@
-import React, { useEffect, useState, MouseEvent } from "react";
+/**
+ * This example shows how you can use custom nodes and edges to dynamically add elements to your react flow graph.
+ * A global layouting function calculates the new positions for the nodes every time the graph changes and animates existing nodes to their new position.
+ *
+ * There are three ways of adding nodes to the graph:
+ *  1. Click an existing node: Create a new child node of the clicked node
+ *  2. Click on the plus icon of an existing edge: Create a node in between the connected nodes of the edge
+ *  3. Click a placeholder node: Turn the placeholder into a "real" node to prevent jumping of the layout
+ *
+ * The graph elements are added via hook calls in the custom nodes and edges. The layout is calculated every time the graph changes (see hooks/useLayout.ts).
+ **/
+import React from "react";
 import ReactFlow, {
-  Position,
-  ReactFlowProvider,
-  useReactFlow,
-  MiniMap,
   Background,
-  Node,
   Edge,
+  Node,
+  ProOptions,
+  ReactFlowProvider,
   MarkerType,
+  Controls,
 } from "reactflow";
-import { hierarchy as d3Hierarchy, tree as d3Tree } from "d3-hierarchy";
-import { scaleLinear as d3ScaleLinear } from "d3-scale";
 
-import data from "./tree";
-
-import useAnimatedNodes from "./useAnimatedNodes";
+import useLayout from "./hooks/useLayout";
+import nodeTypes from "./NodeTypes";
+import edgeTypes from "./EdgeTypes";
 
 import "reactflow/dist/style.css";
 
-const colorScale = d3ScaleLinear<string>()
-  .domain([0, 5])
-  .range(["#ff0072", "#0041d0"]);
+const proOptions: ProOptions = { account: "paid-pro", hideAttribution: true };
 
-const borderW = ["2px", "2px", "1px"];
-const fontW = ["normal", "bold", "normal"];
+// initial setup: one workflow node and a placeholder node
+// placeholder nodes can be turned into a workflow node by click
+const defaultNodes: Node[] = [
+  {
+    id: "1",
+    data: { label: "🌮 Taco" },
+    position: { x: 0, y: 0 },
+    type: "workflow",
+  },
+  {
+    id: "2",
+    data: { label: "+" },
+    position: { x: 0, y: 300 },
+    type: "placeholder",
+  },
+];
 
-type DataType = {
-  name: string;
-  url: string;
-  expanded?: boolean;
-  id?: string;
-  children?: any;
+// initial setup: connect the workflow node to the placeholder node with a placeholder edge
+const defaultEdges: Edge[] = [
+  {
+    id: "1=>2",
+    source: "1",
+    target: "2",
+    type: "placeholder",
+  },
+];
+
+const fitViewOptions = {
+  padding: 0.95,
 };
 
-const hierarchy = d3Hierarchy<DataType>(data[0]);
-
-hierarchy.descendants().forEach((d, i) => {
-  d.data.expanded = false;
-  d.data.id = `${i}`;
-  d.data.children = d.children;
-  d.children = undefined;
-});
-
-const layout = d3Tree<DataType>().nodeSize([25, 200]);
-
-function getElements() {
-  hierarchy.descendants().forEach((d, i) => {
-    d.children = d.data.expanded ? d.data.children : null;
-  });
-
-  const root = layout(hierarchy);
-
-  const nodes = root.descendants().map((d) => ({
-    id: d.data.id,
-    data: { label: d.data.name, depth: d.depth },
-    position: { x: d.y, y: d.x },
-    style: {
-      padding: "2px",
-      backgroundColor: "colorScale(d.depth)",
-      borderStyle: "solid",
-      borderWidth: borderW[d.depth],
-      borderColor: "red",
-      color: "black",
-      fontWeight: fontW[d.depth],
-    },
-
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
-    type: d.data.children ? "default" : "output",
-  }));
-
-  const edges = root.links().map((d, i) => ({
-    id: `${i}`,
-    source: d.source.data.id,
-    target: d.target.data.id,
-    type: "smoothstep",
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color: "red",
-    },
-    style: { stroke: "red", backgroundColor: "red" },
-  }));
-
-  return { nodes, edges };
-}
-
-const initialElements = getElements();
-
-const proOptions = { account: "paid-pro", hideAttribution: true };
-
-const nodeColor = (node: Node) => colorScale(node.data.depth);
-
-function ReactFlowPro({ animationDuration = 200 }) {
-  const [nodes, setNodes] = useAnimatedNodes(initialElements.nodes, {
-    duration: animationDuration,
-  });
-  const [edges, setEdges] = useState(initialElements.edges);
-  const { fitView } = useReactFlow();
-
-  const handleNodeClick = (_: MouseEvent, node: Node) => {
-    const hierarchyNode = hierarchy.find((n) => n.data.id === node.id);
-
-    if (!hierarchyNode) {
-      return;
-    }
-
-    hierarchyNode.data.expanded = !hierarchyNode.data.expanded;
-
-    const nextElements = getElements();
-
-    setNodes(nextElements.nodes);
-    setEdges(nextElements.edges);
-  };
-
-  useEffect(() => {
-    fitView({ duration: animationDuration });
-  }, [nodes, fitView, animationDuration]);
+function ReactFlowPro() {
+  // this hook call ensures that the layout is re-calculated every time the graph changes
+  useLayout();
 
   return (
-    <ReactFlow
-      minZoom={-Infinity}
-      fitView
-      nodes={nodes}
-      edges={edges as Edge[]}
-      onNodeClick={handleNodeClick}
-      elementsSelectable={false}
-      proOptions={proOptions}
-    >
-      <Background />
-      <MiniMap nodeColor={nodeColor} />
-    </ReactFlow>
+    <>
+      <ReactFlow
+        defaultNodes={defaultNodes}
+        defaultEdges={defaultEdges}
+        proOptions={proOptions}
+        fitView
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitViewOptions={fitViewOptions}
+        minZoom={0.2}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        zoomOnDoubleClick={false}
+      >
+        <Background />
+      </ReactFlow>
+      <Controls />
+    </>
   );
 }
 
-function ReactFlowWrapper(props: any) {
+function ReactFlowWrapper() {
   return (
     <ReactFlowProvider>
-      <ReactFlowPro {...props} />
+      <ReactFlowPro />
     </ReactFlowProvider>
   );
 }

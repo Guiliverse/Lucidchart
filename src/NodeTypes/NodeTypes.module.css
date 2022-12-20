@@ -1,0 +1,38 @@
+.node {
+  border: 2px solid red;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+  padding: 12px;
+  width: 160px;
+  text-align: center;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.node:hover {
+  background: radial-gradient(circle at 18.7% 37.8%, rgb(252, 252, 252) 0%, rgb(239, 241, 243) 90%);
+}
+
+.content {
+  pointer-events: none;
+}
+
+.handle {
+  visibility: hidden;
+}
+
+.placeholder {
+  width: 160px;
+  background: #fff;
+  border: 1px dashed #bbb;
+  color: #bbb;
+  box-shadow: none;
+}
+
+.ninput {
+  border: none;
+  background: none;
+}

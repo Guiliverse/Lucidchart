@@ -1,0 +1,14 @@
+
+.edgePath {
+  fill: none;
+  stroke: red;
+  stroke-width: 2;
+
+}
+
+.placeholderPath {
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  stroke: #bbb;
+  fill: none;
+}
