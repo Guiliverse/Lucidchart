@@ -40,8 +40,20 @@ const defaultNodes: Node[] = [
   {
     id: "2",
     data: { label: "+" },
-    position: { x: 0, y: 300 },
+    position: { x: 0, y: 100 },
     type: "placeholder",
+  },
+  {
+    id: "3",
+    data: { label: "child1" },
+    position: { x: 0, y: 100 },
+    type: "workflow",
+  },
+  {
+    id: "4",
+    data: { label: "child2" },
+    position: { x: 0, y: 100 },
+    type: "workflow",
   },
 ];
 
@@ -52,6 +64,18 @@ const defaultEdges: Edge[] = [
     source: "1",
     target: "2",
     type: "placeholder",
+  },
+  {
+    id: "1=>3",
+    source: "1",
+    target: "3",
+    type: "workflow",
+  },
+  {
+    id: "1=>4",
+    source: "1",
+    target: "4",
+    type: "workflow",
   },
 ];
 

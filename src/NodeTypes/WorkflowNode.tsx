@@ -1,5 +1,9 @@
-import React, { memo, useState } from "react";
-import { Handle, Position, NodeProps } from "reactflow";
+import React, { memo, useRef, useState, useEffect } from "react";
+import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
+import { drag } from "d3-drag";
+import { select } from "d3-selection";
+//import { NodeResizer } from "@reactflow/node-resizer";
+import "@reactflow/node-resizer/dist/style.css";
 import cx from "classnames";
 
 import styles from "./NodeTypes.module.css";
@@ -13,6 +17,29 @@ const WorkflowNode = ({ id, data }: NodeProps) => {
   const handleChange = (e) => {
     setText(e.target.value);
   };
+  /*const rotateControlRef = useRef(null);
+  const updateNodeInternals = useUpdateNodeInternals();
+  const [rotation, setRotation] = useState(0);
+  const [resizable, setResizable] = useState(true);
+  const [rotatable, setRotatable] = useState(true);
+
+  useEffect(() => {
+    if (!rotateControlRef.current) {
+      return;
+    }
+
+    const selection = select(rotateControlRef.current);
+    const dragHandler = drag().on("drag", (evt) => {
+      const dx = evt.x - 100;
+      const dy = evt.y - 100;
+      const rad = Math.atan2(dx, dy);
+      const deg = rad * (180 / Math.PI);
+      setRotation(180 - deg);
+      updateNodeInternals(id);
+    });
+
+    selection.call(dragHandler);
+  }, [id, updateNodeInternals]);*/
 
   return (
     <div

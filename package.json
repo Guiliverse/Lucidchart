@@ -1,13 +1,14 @@
 {
   "dependencies": {
+    "@reactflow/node-resizer": "^1.2.0",
+    "@types/d3": "latest",
+    "classnames": "latest",
+    "d3-hierarchy": "latest",
+    "d3-timer": "latest",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-scripts": "^5.0.0",
-    "reactflow": "11.3.3",
-    "d3-hierarchy": "latest",
-    "d3-timer": "latest",
-    "classnames": "latest",
-    "@types/d3": "latest"
+    "reactflow": "11.3.3"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",

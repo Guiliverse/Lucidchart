@@ -1,6 +1,7 @@
 import React from "react";
 import { EdgeProps, getSmoothStepPath, EdgeTypes } from "reactflow";
 
+import useEdgeClick from "../hooks/useEdgeClick";
 import styles from "./EdgeTypes.module.css";
 
 export default function CustomEdge({
@@ -16,6 +17,7 @@ export default function CustomEdge({
 }: EdgeProps) {
   // see the hook for implementation details
   // onClick adds a node in between the nodes that are connected by this edge
+  const onClick = useEdgeClick(id);
 
   const [edgePath, edgeCenterX, edgeCenterY] = getSmoothStepPath({
     sourceX,
@@ -36,6 +38,21 @@ export default function CustomEdge({
         type="smoothstep"
         markerEnd={markerEnd}
       />
+      <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
+        <rect
+          onClick={onClick}
+          x={-10}
+          y={-10}
+          width={20}
+          ry={4}
+          rx={4}
+          height={20}
+          className={styles.edgeButton}
+        />
+        <text className={styles.edgeButtonText} y={5} x={-4}>
+          +
+        </text>
+      </g>
     </>
   );
 }
