@@ -55,6 +55,18 @@ const defaultNodes: Node[] = [
     position: { x: 0, y: 100 },
     type: "workflow",
   },
+  {
+    id: "5",
+    data: { label: "+" },
+    position: { x: 0, y: 100 },
+    type: "placeholder",
+  },
+  {
+    id: "6",
+    data: { label: "+" },
+    position: { x: 0, y: 100 },
+    type: "placeholder",
+  },
 ];
 
 // initial setup: connect the workflow node to the placeholder node with a placeholder edge
@@ -76,6 +88,18 @@ const defaultEdges: Edge[] = [
     source: "1",
     target: "4",
     type: "workflow",
+  },
+  {
+    id: "3=>5",
+    source: "3",
+    target: "5",
+    type: "placeholder",
+  },
+  {
+    id: "4=>6",
+    source: "4,
+    target: "6,
+    type: "placeholder",
   },
 ];
 
