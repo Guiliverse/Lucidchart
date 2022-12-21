@@ -97,8 +97,8 @@ const defaultEdges: Edge[] = [
   },
   {
     id: "4=>6",
-    source: "4,
-    target: "6,
+    source: "4",
+    target: "6",
     type: "placeholder",
   },
 ];
