@@ -19,18 +19,63 @@ import ReactFlow, {
   MarkerType,
   Controls,
 } from "reactflow";
+import { hierarchy as d3Hierarchy, tree as d3Tree } from "d3-hierarchy";
+import { scaleLinear as d3ScaleLinear } from "d3-scale";
 
 import useLayout from "./hooks/useLayout";
 import nodeTypes from "./NodeTypes";
 import edgeTypes from "./EdgeTypes";
 
 import "reactflow/dist/style.css";
-
+import data from "./tree";
 const proOptions: ProOptions = { account: "paid-pro", hideAttribution: true };
 
+type DataType = {
+  name: string;
+  expanded?: boolean;
+  id?: string;
+  children?: any;
+};
+const hierarchy = d3Hierarchy<DataType>(data[0]);
+
+hierarchy.descendants().forEach((d, i) => {
+  d.data.expanded = true;
+  d.data.id = `${i}`;
+  d.data.children = d.children;
+  d.children = d.data.children;
+});
+
+const layout = d3Tree<DataType>().nodeSize([25, 200]);
+function getElements() {
+  hierarchy.descendants().forEach((d, i) => {
+    //d.children = d.data.expanded ? d.data.children : null;
+    d.children = d.data.children;
+  });
+  console.log(hierarchy);
+
+  const root = layout(hierarchy);
+
+  const nodes: Node[] = root.descendants().map((d) => ({
+    id: d.data.id,
+    data: { label: d.data.name, depth: d.depth },
+    position: { x: d.y, y: d.x },
+    type: d.data.children ? "workflow" : "placeholder",
+  }));
+
+  const edges: Edge[] = root.links().map((d, i) => ({
+    id: `${d.source.data.id}=>${d.target.data.id}`,
+    source: d.source.data.id,
+    target: d.target.data.id,
+    type: d.target.data.name == "+" ? "placeholder" : "mainfix",
+  }));
+
+  return { nodes, edges };
+}
+
+const initialElements = getElements();
 // initial setup: one workflow node and a placeholder node
 // placeholder nodes can be turned into a workflow node by click
-const defaultNodes: Node[] = [
+/*const defaultNodes: Node[] = [
   {
     id: "1",
     data: { label: "🌮 Taco" },
@@ -67,10 +112,10 @@ const defaultNodes: Node[] = [
     position: { x: 0, y: 100 },
     type: "placeholder",
   },
-];
+];*/
 
 // initial setup: connect the workflow node to the placeholder node with a placeholder edge
-const defaultEdges: Edge[] = [
+/*const defaultEdges: Edge[] = [
   {
     id: "1=>2",
     source: "1",
@@ -101,7 +146,7 @@ const defaultEdges: Edge[] = [
     target: "6",
     type: "placeholder",
   },
-];
+];*/
 
 const fitViewOptions = {
   padding: 0.95,
@@ -114,8 +159,8 @@ function ReactFlowPro() {
   return (
     <>
       <ReactFlow
-        defaultNodes={defaultNodes}
-        defaultEdges={defaultEdges}
+        defaultNodes={initialElements.nodes}
+        defaultEdges={initialElements.edges}
         proOptions={proOptions}
         fitView
         nodeTypes={nodeTypes}

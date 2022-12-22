@@ -36,7 +36,7 @@ function useEdgeClick(id: EdgeProps["id"]) {
 
     // new connection from source to new node
     const sourceEdge = {
-      id: `${edge.source}->${insertNodeId}`,
+      id: `${edge.source}=>${insertNodeId}`,
       source: edge.source,
       target: insertNodeId,
       type: "workflow",
@@ -44,7 +44,7 @@ function useEdgeClick(id: EdgeProps["id"]) {
 
     // new connection from new node to target
     const targetEdge = {
-      id: `${insertNodeId}->${edge.target}`,
+      id: `${insertNodeId}=>${edge.target}`,
       source: insertNodeId,
       target: edge.target,
       type: "workflow",
