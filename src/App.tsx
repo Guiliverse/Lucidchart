@@ -9,16 +9,19 @@
  *
  * The graph elements are added via hook calls in the custom nodes and edges. The layout is calculated every time the graph changes (see hooks/useLayout.ts).
  **/
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   Edge,
   Node,
+  addEdge,
   ProOptions,
   ReactFlowProvider,
-  MarkerType,
+  useReactFlow,
   Controls,
+  MarkerType,
 } from "reactflow";
+import { uuid, randomLabel } from "./utils";
 import { hierarchy as d3Hierarchy, tree as d3Tree } from "d3-hierarchy";
 import { scaleLinear as d3ScaleLinear } from "d3-scale";
 
@@ -46,6 +49,7 @@ hierarchy.descendants().forEach((d, i) => {
 });
 
 const layout = d3Tree<DataType>().nodeSize([25, 200]);
+
 function getElements() {
   hierarchy.descendants().forEach((d, i) => {
     //d.children = d.data.expanded ? d.data.children : null;
@@ -75,78 +79,6 @@ function getElements() {
 const initialElements = getElements();
 // initial setup: one workflow node and a placeholder node
 // placeholder nodes can be turned into a workflow node by click
-/*const defaultNodes: Node[] = [
-  {
-    id: "1",
-    data: { label: "🌮 Taco" },
-    position: { x: 0, y: 0 },
-    type: "workflow",
-  },
-  {
-    id: "2",
-    data: { label: "+" },
-    position: { x: 0, y: 100 },
-    type: "placeholder",
-  },
-  {
-    id: "3",
-    data: { label: "child1" },
-    position: { x: 0, y: 100 },
-    type: "workflow",
-  },
-  {
-    id: "4",
-    data: { label: "child2" },
-    position: { x: 0, y: 100 },
-    type: "workflow",
-  },
-  {
-    id: "5",
-    data: { label: "+" },
-    position: { x: 0, y: 100 },
-    type: "placeholder",
-  },
-  {
-    id: "6",
-    data: { label: "+" },
-    position: { x: 0, y: 100 },
-    type: "placeholder",
-  },
-];*/
-
-// initial setup: connect the workflow node to the placeholder node with a placeholder edge
-/*const defaultEdges: Edge[] = [
-  {
-    id: "1=>2",
-    source: "1",
-    target: "2",
-    type: "placeholder",
-  },
-  {
-    id: "1=>3",
-    source: "1",
-    target: "3",
-    type: "workflow",
-  },
-  {
-    id: "1=>4",
-    source: "1",
-    target: "4",
-    type: "workflow",
-  },
-  {
-    id: "3=>5",
-    source: "3",
-    target: "5",
-    type: "placeholder",
-  },
-  {
-    id: "4=>6",
-    source: "4",
-    target: "6",
-    type: "placeholder",
-  },
-];*/
 
 const fitViewOptions = {
   padding: 0.95,
@@ -155,6 +87,56 @@ const fitViewOptions = {
 function ReactFlowPro() {
   // this hook call ensures that the layout is re-calculated every time the graph changes
   useLayout();
+  const { getNode, setNodes, setEdges, project } = useReactFlow();
+
+  const reactFlowWrapper = useRef(null);
+  const connectingNodeId = useRef(null);
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    []
+  );
+  const onConnectStart = useCallback((_, { nodeId }) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+  const onConnectEnd = useCallback(
+    (event) => {
+      const targetIsPane = event.target.classList.contains("react-flow__pane");
+
+      if (targetIsPane) {
+        const childNodeId = uuid();
+        const childNodeId1 = uuid();
+
+        const childNode = {
+          id: childNodeId,
+          position: { x: 100, y: 200 },
+          type: "workflow",
+          data: { label: "Temp" },
+        };
+        const childNode1 = {
+          id: childNodeId1,
+          position: { x: 200, y: 200 },
+          type: "placeholder",
+          data: { label: "+" },
+        };
+        const childEdge = {
+          id: `${connectingNodeId.current}=>${childNodeId}`,
+          source: connectingNodeId.current,
+          target: childNodeId,
+          type: "workflow",
+          markerEnd: { type: MarkerType.ArrowClosed, color: "red" },
+        };
+        const childEdge1 = {
+          id: `${childNodeId}=>${childNodeId1}`,
+          source: childNodeId,
+          target: childNodeId1,
+          type: "placeholder",
+        };
+        setNodes((nodes) => nodes.concat([childNode, childNode1]));
+        setEdges((edges) => edges.concat([childEdge, childEdge1]));
+      }
+    },
+    [project]
+  );
 
   return (
     <>
@@ -167,8 +149,11 @@ function ReactFlowPro() {
         edgeTypes={edgeTypes}
         fitViewOptions={fitViewOptions}
         minZoom={0.2}
-        nodesDraggable={false}
-        nodesConnectable={false}
+        onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        nodesDraggable={true}
+        nodesConnectable={true}
         zoomOnDoubleClick={false}
       >
         <Background />

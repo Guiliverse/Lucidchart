@@ -56,13 +56,13 @@ const WorkflowNode = ({ id, data }: NodeProps) => {
         className={styles.handle}
         type="target"
         position={Position.Left}
-        isConnectable={false}
+        isConnectable={true}
       />
       <Handle
         className={styles.handle}
         type="source"
         position={Position.Right}
-        isConnectable={false}
+        isConnectable={true}
       />
     </div>
   );
