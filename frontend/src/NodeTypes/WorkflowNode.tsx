@@ -1,5 +1,11 @@
 import React, { memo, useRef, useState, useEffect } from "react";
-import { Handle, Position, NodeProps, useUpdateNodeInternals } from "reactflow";
+import {
+  Handle,
+  Position,
+  NodeProps,
+  NodeToolbar,
+  useReactFlow,
+} from "reactflow";
 import { drag } from "d3-drag";
 import { select } from "d3-selection";
 //import { NodeResizer } from "@reactflow/node-resizer";
@@ -14,32 +20,11 @@ const WorkflowNode = ({ id, data }: NodeProps) => {
   // calling onClick adds a child node to this node
   const [text, setText] = useState(data.label);
   const onClick = useNodeClickHandler(id);
+  const { deleteElements } = useReactFlow();
   const handleChange = (e) => {
     setText(e.target.value);
   };
-  /*const rotateControlRef = useRef(null);
-  const updateNodeInternals = useUpdateNodeInternals();
-  const [rotation, setRotation] = useState(0);
-  const [resizable, setResizable] = useState(true);
-  const [rotatable, setRotatable] = useState(true);
-
-  useEffect(() => {
-    if (!rotateControlRef.current) {
-      return;
-    }
-
-    const selection = select(rotateControlRef.current);
-    const dragHandler = drag().on("drag", (evt) => {
-      const dx = evt.x - 100;
-      const dy = evt.y - 100;
-      const rad = Math.atan2(dx, dy);
-      const deg = rad * (180 / Math.PI);
-      setRotation(180 - deg);
-      updateNodeInternals(id);
-    });
-
-    selection.call(dragHandler);
-  }, [id, updateNodeInternals]);*/
+  //const onDelete = () => deleteElements({ nodes: [{ id }] });
 
   return (
     <div
@@ -47,6 +32,9 @@ const WorkflowNode = ({ id, data }: NodeProps) => {
       className={cx(styles.node)}
       title="click to add a child node"
     >
+      {/* <NodeToolbar className="nodrag">
+        <button onClick={onDelete}>Delete</button>
+      </NodeToolbar> */}
       <input
         value={text}
         className={cx(styles.ninput)}

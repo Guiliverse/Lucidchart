@@ -9,7 +9,7 @@
  *
  * The graph elements are added via hook calls in the custom nodes and edges. The layout is calculated every time the graph changes (see hooks/useLayout.ts).
  **/
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   Edge,
@@ -28,6 +28,9 @@ import { scaleLinear as d3ScaleLinear } from "d3-scale";
 import useLayout from "./hooks/useLayout";
 import nodeTypes from "./NodeTypes";
 import edgeTypes from "./EdgeTypes";
+import Header from "./components/Header";
+import axios from "axios";
+axios.defaults.baseURL = "http://143.110.235.105:8080";
 
 import "reactflow/dist/style.css";
 import data from "./tree";
@@ -87,10 +90,50 @@ const fitViewOptions = {
 function ReactFlowPro() {
   // this hook call ensures that the layout is re-calculated every time the graph changes
   useLayout();
-  const { getNode, setNodes, setEdges, project } = useReactFlow();
+  const { getNode, setNodes, setEdges, project, getNodes, getEdges } =
+    useReactFlow();
 
   const reactFlowWrapper = useRef(null);
   const connectingNodeId = useRef(null);
+  const [chartCount, setChartCount] = useState(0);
+  const [curChart, setCurChart] = useState(-1);
+  useEffect(() => {
+    (async () => {
+      const res = await axios.get("getCount?name=test");
+      setChartCount(res.data.count);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (curChart >= 0) {
+        console.log("start");
+        const res = await axios.get(`getChart?name=test&index=${curChart}`);
+        const nodesData = res.data.data.nodes;
+        const edgesData = res.data.data.edges;
+        console.log(edgesData);
+        const newNodes = nodesData.map((node) => {
+          return {
+            id: node.id,
+            position: { x: 100, y: 100 },
+            data: node.data,
+            type: node.type,
+          };
+        });
+        const newEdges = edgesData.map((edge) => {
+          return {
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: edge.type,
+          };
+        });
+        setNodes(newNodes);
+        setEdges(newEdges);
+        useLayout();
+      }
+    })();
+  }, [curChart]);
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     []
@@ -98,6 +141,26 @@ function ReactFlowPro() {
   const onConnectStart = useCallback((_, { nodeId }) => {
     connectingNodeId.current = nodeId;
   }, []);
+
+  const saveChart = async () => {
+    const nodes = getNodes();
+    const edges = getEdges();
+    const res = await axios.post("add", {
+      nodes,
+      edges,
+      name: "test",
+    });
+    console.log(res.data);
+    setChartCount(res.data.count);
+  };
+
+  const addUser = () => {
+    axios.post("user", {
+      name: "test",
+      mail: "test@gmail.com",
+    });
+  };
+
   const onConnectEnd = useCallback(
     (event) => {
       const targetIsPane = event.target.classList.contains("react-flow__pane");
@@ -140,6 +203,12 @@ function ReactFlowPro() {
 
   return (
     <>
+      <Header
+        saveChart={saveChart}
+        addUser={addUser}
+        chartCount={chartCount}
+        setCurChart={setCurChart}
+      />
       <ReactFlow
         defaultNodes={initialElements.nodes}
         defaultEdges={initialElements.edges}
